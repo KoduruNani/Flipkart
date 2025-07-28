@@ -12,19 +12,27 @@ import { Router } from '@angular/router';
   styleUrls: ['./cart.scss']
 })
 export class CartComponent implements OnInit {
-  cart: any[] = [];
+  cart: any[] = null;
   total = 0;
+  loading = false;
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(public api: ApiService, public router: Router) {}
 
   ngOnInit() {
-    this.cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    this.cart.forEach(item => { if (!item.quantity) item.quantity = 1; });
+    this.cart = JSON.parse(localStorage.getItem('cart'));
+    this.cart.forEach(item => {
+      if (!item.quantity) item.quantity = 1;
+      if (item.quantity > 99) item.quantity = 99;
+    });
     this.updateTotal();
   }
 
   updateTotal() {
-    this.total = this.cart.reduce((sum, item) => sum + item.Price * (item.quantity || 1), 0);
+    this.total = 0;
+    for (let i = 0; i < this.cart.length; i++) {
+      const item = this.cart[i];
+      this.total += item.price * item.quantity;
+    }
   }
 
   removeFromCart(index: number) {
@@ -34,15 +42,28 @@ export class CartComponent implements OnInit {
   }
 
   changeQuantity(index: number, event: any) {
-    this.cart[index].quantity = +event.target.value;
+    this.cart[index].quantity = parseInt(event.target.value);
     localStorage.setItem('cart', JSON.stringify(this.cart));
     this.updateTotal();
   }
 
   placeOrder() {
-    this.api.placeOrder(this.cart, this.total).subscribe(() => {
+    this.loading = true;
+    this.api.placeOrder(this.cart, this.total).subscribe(res => {
       localStorage.removeItem('cart');
-      this.router.navigate(['/order-success']);
+      this.cart = [];
+      this.router.navigateByUrl('/order-success');
+      this.loading = false;
     });
+  }
+
+  resetCart() {
+    localStorage.clear();
+    this.cart = [];
+    this.updateTotal();
+  }
+
+  getItemName(index: number) {
+    return this.cart[index].productName || this.cart[index].name || 'Unnamed Product';
   }
 }
