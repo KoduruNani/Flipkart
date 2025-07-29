@@ -1,11 +1,33 @@
-<h2>Your Cart</h2>
-<div *ngIf="cart.length === 0">Cart is empty.</div>
-<div *ngFor="let item of cart; let i = index" class="cart-item">
-  <h3>{{ item.Name }}</h3>
-  <p>Price: ₹{{ item.Price }}</p>
-  <label>Qty: <input type="number" min="1" [(ngModel)]="item.quantity" (change)="changeQuantity(i, $event)" /></label>
-  <button (click)="removeFromCart(i)">Remove</button>
+<h2 class="cart-title">🛒 Your Cart</h2>
+
+<div *ngIf="cart.length === 0" class="empty-cart">
+  <p>Your cart is currently empty.</p>
+  <a routerLink="/products" class="back-link">Browse Products</a>
 </div>
-<p *ngIf="cart.length">Total: ₹{{ total }}</p>
-<button *ngIf="cart.length" (click)="placeOrder()">Place Order</button>
-<a routerLink="/products">Back to Products</a>
+
+<div *ngIf="cart.length > 0" class="cart-container">
+  <div *ngFor="let item of cart; let i = index" class="cart-item">
+    <div class="item-info">
+      <h3 class="item-name">{{ item.Name }}</h3>
+      <p class="item-price">₹{{ item.Price }}</p>
+    </div>
+    <div class="item-controls">
+      <label for="quantity-{{ i }}">Qty:</label>
+      <input
+        id="quantity-{{ i }}"
+        type="number"
+        min="1"
+        [(ngModel)]="item.quantity"
+        (change)="changeQuantity(i, $event)"
+        class="quantity-input"
+      />
+      <button (click)="removeFromCart(i)" class="remove-button">❌ Remove</button>
+    </div>
+  </div>
+
+  <div class="cart-summary">
+    <p class="cart-total"><strong>Total:</strong> ₹{{ total }}</p>
+    <button (click)="placeOrder()" class="place-order-button">✅ Place Order</button>
+    <a routerLink="/products" class="back-link">🔙 Back to Products</a>
+  </div>
+</div>
